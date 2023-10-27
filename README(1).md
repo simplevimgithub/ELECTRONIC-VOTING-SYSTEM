@@ -1,76 +1,299 @@
-# Electronic Voting System using Blockchain and Smart Contracts
-
-[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)]()
-
-Traditional elections satisfy neither citizens nor political authorities in recent years. They are not fully secure since it is easy to attack votes. It also threatens privacy and transparency of voters. Additionally, it takes too much time to count the votes. 
-
-We propose a Blockchain based solution for solving various problems faced in the voting process. This project is a simple attemmpt to design and build an electronic voting system; where we make use of *Solidity Smart Contracts* to create a decentralized voting application (DApp). 
-
-
-Our implementation consists of a web interface to allow user to interact with the blockchain, rest api to handle required records of data. For a private blockchain, we've used go-based Ethereum implementation
-
-## System Design
-
-At a very high level, a simple voting system comprises of an organising authority, a voting machine and a vote.
-In case of our system, we add an etherium based blockchain, which establishes the network between the three mentioned entities.
-
-![network_image](https://github.com/safeer2978/Blockchain_Based_Voting_system/blob/master/Diagrams/abstract.png)
-
-Ultimatley our project converges to a Decentralised Web application(). The components of this application are:-
-
-3. Smart Contracts
-2. Front-end Software for Election Commision (ECI) and for Voting Machine
-4. Voter Authentication Service
-
-![architecture image](https://github.com/safeer2978/Blockchain_Based_Voting_system/blob/master/Diagrams/architecture.png)
-### Smart Contracts
-
- The system includes two Smart contract:
-1. Ballot smart contract.
- the Ballot smart contract is where the votes are recorded. Each district or constituency would have a Ballot instance deployed on the blockchain; and it consists a list of candidate data for respective district. The Ballot consist of a vote function which can be called by the client to increment vote count of a candidate. Since this function changes the state of the contract, it is function is payable, and thus recorded on the blockchain. Each ballot has a time parameter which specifies the duration till which the vote function would be valid. This contract will be accessed by the voting machine for voting and the ECI portal for monitoring and counting process.  
-
-2. Election creation smart contract.
- the election creation smart contract is what is used to deploy the ballots on the blockchain. Only the ECI representative, operating the ECI portal client can connect to this contract. This contract takes input as the database of all candidates of respective districts and deploys ballots for every district onto the blockchain. This contract also has a function which returns the addresses of the deployed ballots, so they can be used by the voting machines later.
-
-![alt text](https://github.com/safeer2978/Blockchain_Based_Voting_system/blob/master/Diagrams/sm1.png)![alt text](https://github.com/safeer2978/Blockchain_Based_Voting_system/blob/master/Diagrams/sm2.png)
-
-### Web clients
-There are two web clients in this project viz the ECI portal and the voting machine. Both of these clients require communication using both http and rpc protocols, hence make use of api/libraries such as XMLHttpRequest and web3.js
-
-1. ECI portal.
-
-The ECI portal has several functions. First, it has to register eligible voters. For this, a table consisting of required voter data is created using this functionality. this data includes a hash of voter id and fingerprint and the voters' district. For each registered voter, this data is collected and maintained in a database.
-Secondly, to create a database of candidates of respective districts, another functionality is added. This would create a table of candidate data which will be used to load the ballots later.
-Third, this portal allows the ECI official to start the election, by specifying the candidates and the time duration. This would make use of election creation smart which would intern deploy the Ballots. The Addresses of these deployed ballots are maintained in a separate table for future use.
-Lastly, the portal makes use the address stored in table, to access the ballots to monitor the votes; thereby declare the winner of the election.
-
-2. The Voting machine interface.
-
-The voting machine interface would first verify the voters' eligibility. For this, the machine would input the voter id and fingerprint signature from the voter. This data is hashed and compared with the voter database for authentication. Eligible voters are given access to the ballot, where the can cast their vote. The interface is simple and provides instructions in several languages. The interaction with the ballot is done by using web3 ipc protocol which would connect to the node on the machine. The web app interacts with the ballot smart contract using web3js and thus sends vote as a transaction.
-
-### Voter Authentication Service
-
-All database interactions are built on a REST api built using NodeJS application. 
-This api interacts with clients and a mysql server hosted online. 
-
-The database maintains 3 tables viz, candidate data, voter data and contract addresses.
-
-### Blockchain
-
-The blockchain is established using the geth program. Geth is the go-based implementation of Ethereum protocol. We create a private p2p network of all voting machines, miners and eci portal. We created our own genesis description which would be needed to connect to our network. 
-
-
-## Screen Shots:
-
-### Voter Interface
-
-![alt text](https://github.com/safeer2978/Blockchain_Based_Voting_system/blob/master/Diagrams/1.jpg)
-![alt text](https://github.com/safeer2978/Blockchain_Based_Voting_system/blob/master/Diagrams/2.jpg)
-![alt text](https://github.com/safeer2978/Blockchain_Based_Voting_system/blob/master/Diagrams/3.jpg)
-
-### Election Commision Interface
-![alt text](https://github.com/safeer2978/Blockchain_Based_Voting_system/blob/master/Diagrams/11.jpg)
-![alt text](https://github.com/safeer2978/Blockchain_Based_Voting_system/blob/master/Diagrams/12.jpg)
-![alt text](https://github.com/safeer2978/Blockchain_Based_Voting_system/blob/master/Diagrams/13.jpg)
-![alt text](https://github.com/safeer2978/Blockchain_Based_Voting_system/blob/master/Diagrams/14.jpg)
-
+E-VOTING BACKGROUND AND REQUIREMENTS
+Electronic voting has been an area of research focus for many years by using computing machines and
+equipment for casting votes and producing high quality and precise results in accordance with the
+sentiments of the participating voters. Various attempts have been adopted in practice to support election
+process. Initially computer counting system allowed the voter to cast vote on papers. Later on, those cards
+went through the process of scanning and tallying at every polling cell on a central server (Kadam et al,
+2015; Rockwell, 2017; Hao et al, 2010). Direct Recording Electronic (DRE) voting systems were put in
+place later on which were admired and acknowledged greatly by the voters in-spite of the resistance from
+computer scientists. If the voting system is well understood by the voters, the system’s usability can be
+increased remarkably. DRE systems in particular have gathered a lot of successes in bringing the voters
+to use this technology. These systems work more or less in the same way as any conventional election
+system does. In the case of DRE, a voter begins his journey by going to their polling place and get their
+token to vote where he utilizes his token at the voting terminal to vote for his candidate. When the
+candidate selection procedure is completed, DRE systems present the final selection to the voter before
+actually casting it (in case if the voter wants to change his opinion) and after the final selection, the ballot
+casting is completed (Multichain, 2017; Dalia et al, 2012).
+More recently, distributed ledger technologies such as blockchain have been used to achieve e-voting
+systems primarily due to their advantages in terms of end-to-end verifiability. With properties such as
+anonymity, privacy protection and non-repudiation, blockchain is a very attractive alternative to
+contemporary e-voting systems. The research presented in this paper also attempts to leverage these
+properties of blockchain to achieve an efficient e-voting system. A detailed analysis of such systems is
+presented in the next section along with the identification of comparison with these approaches.
+e-Voting Requirements and Compliance by the Proposed System
+The generic requirements for a typical e-voting system have been defined in (Rura et al, 2016). We
+present a brief description of each requirement along with an explanation of how the proposed system
+fulfils it.
+Privacy - Keeping an individual’s vote secret
+The system leverages cryptographic properties of blockchain to achieve privacy of a voter. More
+specifically, as voter is registered into the system, a voter hash is generated by blockchain which is the
+unique identifier of a voter into the blockchain, and is protected from misuse due to collision resistance
+property of the cryptographic hash. Due to this, the traceability of a vote is also non-trivial thereby
+protecting the voter when under duress.
+Eligibility - Allowing only registered voters to vote, with each such voter voting only once
+All eligible users are required to register using unique identifiers such as government-issued documents to
+assert their eligibility. In addition to this, our system implements strong authentication mechanism using
+finger printing technology to assert that only authorized voters can access the system. Furthermore, the
+use of biometrics also enables the system to protect against double voting.
+Receipt Freeness - Voters should be unable to prove to a third party that they voted in a
+particular way
+The proposed system enables a voter to vote as per their choice and creates a cryptographic hash for each
+such event (transaction). This is important to achieve verifiability i.e. to verify if a certain vote was
+included in the count. However, possession of this hash does not allow to extract information about the
+way voter has voted.
+Convenience - Voters must be able to vote easily, and everyone who is eligible must be
+able to vote
+The system has been implemented using a user friendly web based interface with the voting process
+requiring minimal input from the user. For instance, fingerprinting is implemented for authentication
+mechanism to avoid the requirement to remember username/passwords. Furthermore, the overall process
+is integrated which enables the user to interact with it in a seamless manner.
+Verifiability - The ability to trust the vote tallying process
+Upon casting their vote successfully, a user is provided with their unique transaction ID in the form of a
+cryptographic hash. A user can use this transaction ID to track if their vote was included in the tallying
+process. However, this process does not enable a user to view how they voted which has been adopted to
+mitigate threats when under duress.
+The analysis presented above highlights the performance of the proposed system with respect to the
+specific requirements of e-voting. It also highlights the significance of defining characteristics of
+blockchain and their profound role in achieving the cornerstones of an efficient e-voting system.
+Therefore, we believe the work presented here makes significant contribution to the existing knowledge
+with respect to the application of blockchain technology to achieve a secure digital voting system.
+RELATED WORKS
+In (Kiayias & Yung, 2002), a self-tallying voting system is proposed that does not require any trusted
+third parties for vote aggregation and any private channel for voter-to-voter privacy. The proposed
+protocol involves extensive computation. In (Hao et al, 2010) a two round protocol is proposed that
+computes the tally in two rounds without using a private channel or a trusted third party. The protocol is
+efficient in terms of amputation and bandwidth consumption but is neither robust nor fair in certain
+conditions (Dalia et al, 2012). In (Dalia et al, 2012) a protocol is proposed to improve the robustness and
+fairness of the two round protocol (Hao et al, 2010). In (Shahandashti & Hao, 2016), authors propose E2E
+verifiable voting system named DRE-ip (DRE-i with enhanced privacy), that overcomes limitations of
+DRE-i (Chaum et al, 2008). Instead of pre-computing ciphertexts, DRE-ip encrypts the vote on the fly
+during voting process. DRE-ip achieves E2E verifiability without TAs, but at the same time provides a
+significantly stronger privacy guarantee than DRE-i. In (Chaum, 2004) end-to-end verifiability is
+achieved through the Mixnet protocol (Chaum, 1981) that recovers the plaintext ballot in an unlikable
+manner by randomizing the ciphertext through a chain of mix servers.
+Scantegrity is proposed in (Chaum et al, 2008) that achieves end-to-end (E2E) verifiability with
+confirmation codes that allow voters to prove to themselves that their ballots are included in the final tally
+as they really are. Another scheme Prêt à Voter based on (Chaum, 2004) is proposed in (Chaum et al,
+2005) that ensures privacy by constructing the ballot with two columns i.e. voting options are listed in one
+column and the voter's choice is entered in an adjacent column. The work in (Adida & Rivest, 2006) is
+based on Prêt à Voter but using homomorphic tabulation and it uses scratch stripes to allow off-line
+auditing of ballots. Other systems that have been proposed for electronic voting include: Bingo Voting
+(Bohli et al, 2007), Helios (Adida, 2008), DRE-i (Hao et al, 2014 ) and DRE-ip (Shahandashti & Hao,
+2016), Star-Vote (Bell et al, 2013) and (Sandler et al, 2008) to name a few.
+Fig. 1 Architecture for proposed e-voting system.
+The existing approaches perform well for end-to-end verifiability without compromising the privacy of
+voters. In (McCorry et al, 2017), authors presented the implementation of decentralized and self-tallying
+internet voting protocol over the blockchain using Ethereum. Authors used the openvote (Chaum et al,
+2008) e-voting approach as their baseline.
+The focus of our research is to explore the exciting opportunities presented by blockchain technologies by
+investigating their application in diverse application domains. Within this context, this paper presents our
+efforts to develop an e-voting system by leveraging blockchain technology. To this end, our proposed
+scheme fulfils the specific requirements for e-voting as discussed in section 2 and illustrated further in the
+following sections.
+PROPOSED SYSTEM DEISGN
+The proposed e-voting system is based on the well-established Prêt à Voter e-voting approach identified
+in (Ryan, 2008). The system has been designed to support a voting application in the real world
+environment taking into account specific requirements such as privacy, eligibility, convenience, receipt-
+freeness and verifiability. The proposed system aims to achieve secure digital voting without
+compromising its usability. Within this context, the system is designed using a web-based interface to
+facilitate user engagement with measures such as finger printing to protect against double voting. With a
+clear need to administer the voters, constituencies and candidates for constituencies, a user-friendly
+administrator interface is implemented to enable ease of access. Furthermore, the system allows all voters
+equal rights of participation and develops a fair and healthy competition among all the candidates while
+keeping the anonymity of the voters preserved. The cryptographic hash of the transaction (ID) is emailed
+to the voter as a proof that the vote has been casted which may later on be tracked outside the premises of
+the constituency.
+Detailed Description of the Layered Approach
+The proposed e-voting system architecture is presented in Fig. 1 and has been divided into several layers
+to achieve modular design. These layers are described below;
+User Interaction and Front-end Security layer is responsible for interacting with a voter (to support vote
+casting functions) and the administrator (to support functions pertaining to administering the election
+process). It encapsulates two key functions i.e. authentication and authorization of the users (voters and
+administrators) to ensure that the access to the system is restricted to legitimate users in accordance with
+the predefined access control policies. A number of different methods can be applied to achieve this
+function ranging from basic username/password to more advanced such as fingerprinting or iris
+recognition. Therefore these are rendered specific to individual implementation of the proposed
+architecture. Overall, this layer serves as the first point of contact with the users and is responsible for
+validating user credentials as governed by the system-specific policies.
+Access Control Management layer is envisaged to facilitate layer 1 and layer 3 by providing services
+required for these layers to achieve their expected functions. These services include roles definition, their
+respective access control policies and voting transaction definitions. The role definition and management
+provides core support for the access control functions implemented by layer 1 whereas the voting
+transaction definitions support the blockchain based transaction mapping and mining performed at the
+layer 3. Overall, this layer enables a coherent function of the proposed system by providing the
+foundations required by individual layers.
+e-Voting Transaction Management layer is the core layer of the architecture where the transaction for e-
+voting constructed at Role Management / Transactions layer is mapped onto the blockchain transaction to
+be mined. This mapped transaction also contains the credentials provided by a voter at layer 1 for
+authentication. An example of such data can be the fingerprint of the voter. This data is then used to
+create the cryptographic hash and contributes towards creating the transaction ID. The verification of such
+credentials is envisioned to be achieved at User Interaction and Front-end Security layer (layer 1). A
+number of virtual instances of nodes are involved in the process of mining to get this transaction finally
+enter into the chain.
+Ledger Synchronization layer synchronizes Multichain ledger with the local application specific database
+using one of the existing database technologies. Votes cast are recorded in the data tables at the backend
+of the database. Voters are able to track their votes using the unique identifier provided to them as soon as
+their vote is mined and added into the blockchain ledger. The security considerations of the votes are
+based on block-chain technology using cryptographic hashes to secure end-to-end communication. Voting
+results are also stored in the application’s database with the view to facilitate auditing and any further
+operations at a later stage.
+The Voting Process
+We now describe a typical interaction of a user with the proposed scheme based on our current
+implementation of the system. Typically, a voter logs into the system by providing his/her thumb
+impression. If the match is found, the voter is then presented with a list of available candidates with the
+option to cast vote against them. On the contrary, if the match is unsuccessful, any further access would
+be denied. This function is achieved using appropriate implementation of the authentication mechanism
+(fingerprinting in this case) and predefined role based access control management. Furthermore, it is also
+envisioned that a voter is assigned to their specific constituency and this information is used to develop
+the list of candidates that a voter can vote for. The assignment of voter to a constituency is rendered an
+offline process and therefore out of scope of this research.
+After a successful vote-cast, it is mined by multiple miners for validation following which valid and
+verified votes are added into public ledger. The security considerations of the votes are based on
+blockchain technology using cryptographic hashes to secure end-to-end verification. To this end, a
+successful vote cast is considered as a transaction within the blockchain of the voting application.
+Therefore, a vote cast is added as a new block (after successful mining) in the blockchain as well as being
+recorded in data tables at the backend of the database. The system ensures only one-person, one-vote
+(democracy) property of voting systems. This is achieved by using the voter’s unique thumbprint, which
+is matched at the beginning of every voting attempt to prevent double voting. A transaction is generated
+as soon as the vote is mined by the miners which is unique for each vote. If the vote is found malicious it
+is rejected by miners.
+After validation process, a notification is immediately sent to the voter through message or an email
+providing the above defined transaction id by which user can track his/her vote into the ledger. Although
+this functions as a notification to the voter however it does not enable any user to extract the information
+about how a specific voter voted thereby achieving privacy of a voter. It is important here to note that
+cryptographic hash for a voter is the unique hash of voter by which voter is known in the blockchain. This
+property facilitates achieving verifiability of the overall voting process. Furthermore, this id is hidden and
+no one can view it even a system operator cannot view this hash therefore achieving privacy of individual
+voters.
+Fig. 2 Asset creation using Multichain
+IMPLEMENTATION AND EVALUATION
+Implementation
+The implementation of the proposed system has been carried out within a controlled environment with a
+web-based application created to serve as the front end application enabling the users to interact in a
+convenient manner. This application is implemented via Java EE within the Netbeans platform with
+native Glassfish server used for hosting the application. Glassfish managed server side container for
+holding the application’s EJBs and the data source. The application uses a MySQL as the backend
+database for the application and contains the data entered manually by an admin such as the voter details,
+constituency details and the information about different political parties running for the election. An
+application screenshot demonstrating the admin function to view list of eligible voters is presented in Fig.
+2. In addition to manual entries, the application also supports importing data using MS Excel spread
+sheets to perform bulk import in view of the size of the data in real-world voting scenarios. We have used
+Multichain as the blockchain platform to create a private blockchain for this application which is used for
+recording the voting transactions. This choice is influenced by the ease of use provided by this platform
+and therefore it was easily integrated into our proposed architecture.
+Evaluation and Experimentation
+The primary objective of evaluation was to assess the performance of the system in view of the e-voting
+system requirements presented in section 2 and to identify any considerations with regards to its
+application in a real world scenario. The experimentation consisted of multiple steps i.e. conducting
+multiple transactions, verification of transactions, mining transactions into blockchain, reflection of the
+changes made in the public ledger to all the nodes in the network and the usability of the system.
+A test run was made directly at Multichain by starting from asset creation. An outcome of this is
+demonstrated by Fig. 3. We can refer these assets as votes. Since Multichain by default ideally suits to
+cryptocurrency, therefore we wrote our API’s to design it in the context of vote. In order to perform
+transaction in Multichain, we identified the address and the balance in the address of the node of
+Multichain from where the asset (vote) will be sent.
+While sending the asset to the address, the transaction hash was generated carrying the transfer of vote.
+The balance of the receiving node was incremented by one vote (asset). The transaction becomes a part of
+the public ledger which shows that it has been mined. A sample transaction within the proposed system is
+presented by Fig. 3. Since our customized API for asset creation is designed in such a way that an address
+can have at max only one vote (asset), therefore, it will not be possible for a voter to caste multiple vote
+unless the node receives it from some other address which is only allowed in the case of the candidate.
+Fig. 3 A sample transaction information for the proposed system
+CONCLUSION AND FUTURE WORK
+Electronic voting has been used in varying forms since 1970s with fundamental benefits over paper based
+systems such as increased efficiency and reduced errors. With the extraordinary growth in the use of
+blockchain technologies, a number of initiatives have been made to explore the feasibility of using
+blockchain to aid an effective solution to e-voting. This paper has presented one such effort which
+leverages benefits of blockchain such as cryptographic foundations and transparency to achieve an
+effective solution to e-voting. The proposed approach has been implemented with Multichain and in-
+depth evaluation of approach highlights its effectiveness with respect to achieving fundamental
+requirements for an e-voting scheme.
+In continuation of this work, we are focused at improving the resistance of blockchain technology to
+‘double spending’ problem which will translate as ‘double voting’ for e-voting systems. Although
+blockchain technology achieves significant success in detection of malleable change in a transaction
+however successful demonstration of such events have been achieve which motivates us to investigate it
+further. To this end, we believe an effective model to establish trustworthy provenance for e-voting
+systems will be crucial to achieve an end-to-end verifiable e-voting scheme. The work to achieve this is
+underway in the form of an additional provenance layer to aid the existing blockchain based
+infrastructure.
+REFERENCES
+Adida, B.; ‘Helios (2008). Web-based open-audit voting, in Proceedings of the 17th Conference on
+Security Symposium, ser. SS'08. Berkeley, CA, USA: USENIX Association, 2008, pp. 335{348.
+Adida B. and Rivest, R. L. (2006). Scratch & vote: Self-contained paper-based cryptographic voting, in
+Proceedings of the 5th ACM Workshop on Privacy in Electronic Society, ser. WPES '06. New York, NY,
+USA: ACM, 2006, pp. 29-40.
+Bell, S., Benaloh, J., Byrne, M. D., Debeauvoir, D., Eakin, B., Kortum, P., McBurnett, N., Pereira, O.,
+Stark, P. B., Wallach, D. S., Fisher, G., Montoya, J., Parker, M. and Winn, M. (2013). Star-vote: A
+secure, transparent, auditable, and reliable voting system, in 2013 Electronic Voting Technology
+Workshop/Workshop on Trustworthy Elections (EVT/WOTE 13). Washington, D.C.: USENIX
+Association, 2013.
+Bohli, J. M., Muller-Quade, J. and Rohrich, S. (2007). Bingo voting: Secure and coercion- free voting
+using a trusted random number generator, in Proceedings of the 1st International Conference on E-voting
+and Identity, ser. VOTE-ID'07. Berlin, Heidelberg: Springer-Verlag, 2007, pp. 111-124.
+Chaum, D., Essex, A., Carback, R., Clark, J., Popoveniuc, S., Sherman, A. and Vora, P. (2008)
+Scantegrity: End-to-end voter-veri_able optical- scan voting, IEEE Security Privacy, vol. 6, no. 3, pp. 40-
+46, May 2008.
+Chaum, D. (2004) Secret-ballot receipts: True voter-verifiable elections, IEEE Security Privacy, vol. 2,
+no. 1, pp. 38{47, Jan 2004.
+Chaum, D. (1981) Untraceable electronic mail, return addresses, and digital pseudonym’, Commun.
+ACM, vol. 24, no. 2, pp. 84{90, Feb. 1981.
+Chaum, D., Ryan, P. Y. A. and Schneider, P. Y. A. (2005). A practical voter-verifiable election scheme,
+in Proceedings of the 10th European Conference on Research in Computer Security, ser. ESORICS'05.
+Berlin, Heidelberg: Springer-Verlag, 2005, pp. 118- 139.
+Dalia, K., Ben, R. , Peter Y. A, and Feng, H. (2012) A fair and robust voting system by broadcast, 5th
+International Conference on E-voting, 2012.
+Hao, F., Kreeger, M. N., Randell, B., Clarke, D., Shahandashti, S. F. and Lee, P. H.-J. (2014). Every vote
+counts: Ensuring integrity in large-scale electronic voting, in 2014 Electronic Voting Technology
+Workshop/Workshop on Trustworthy Elections (EVT/WOTE 14). San Diego, CA: USENIX Association,
+2014.
+Hao, F., Ryan, P. Y. A., and Zielinski, P. (2010) Anonymous voting by two-round public discussion, IET
+Information Security, vol. 4, no. 2, pp. 62-67, June 2010.
+Gobel, J., Keeler, H. P., Krzesinski, A.E. and Taylor, P.G. (2015). Bitcoin Blockchain Dynamics: the
+Selfish-Mine Strategy in the Presence of Propagation Delay, May 2015.
+Kadam, M., Jha, P. Jaiswal, S. (2015) Double Spending Prevention in Bitcoins Network, International
+Journal of Computer Engineering and Applications, August 2015.
+Kiayias, A. and Yung, M. (2002) Self-tallying Elections and Perfect Ballot Secrecy. Berlin, Heidelberg:
+Springer Berlin Heidelberg, 2002, pp. 141{158.
+Kraft, D. (2015) Difficulty Control for Blockchain-Based Consensus System, Peer-to-Peer Networking
+and Applications by Springer, March 2015.
+McCorry, P., Shahandashti, S. F. and Hao. F. (2017) A smart contract for boardroom voting with
+maximum voter privacy in the proceedings of FC 2017.
+Multichain (2017) Open platform for blockchain applications. Available at: www.multichain.com last
+accessed: December 2017.
+Nakamoto., S. (2009) Bitcoin: A peer-to-peer electronic cash system, 2009 [Online]. Available:
+http://bitcoins.info/bitcoin-a-peer-to-peer-electroniccash-system-satoshi-nakamoto. Last accessed:
+December 2017.
+Narayanan, A., Bonneau, J., Felten, E., Miller, A. and Gold, S. (2015) Bitcoin and Cryptocurrency
+Technologies, Chapter 2 and 3, Draft October 2015.
+Rockwell, M. (2017) Bitcongress – Process for block voting and law, http://bitcongress.org/ last
+accessed: December 2017
+Rosenfeld. M. (2017). Analysis of hashrate-based double-spending. [Online]. Available:
+http://arxiv.org/abs/1402.2009 last accessed: December 2017.
+Rura L., Issac B., and Haldar M. K. (2016) Implementation and evaluation of steganography based online
+voting, International Journal of Electronic Government Research.
+Ryan, P. Y. A, (2008) Prêt à Voter with Paillier Encryption, in the Mathematical and Computer
+Modelling, in Vol. 48, issue 9-10,1646-1662, 2008.
+Shahandashti, F. S. and Hao, F. (2016) DRE-ip: A Verifiable E-Voting Scheme without Tallying
+Authorities, the 21st European Symposium on Research in Computer Security (ESORICS), 2016.
+Shahandashti S. F. and Hao, F. (2016). DRE-ip: A Verifiable E-Voting Scheme Without Tallying
+Authorities. Cham: Springer International Publishing, 2016, pp. 223-240.
+Sandler, D., Derr, K. and Wallach, D. S. (2008) Votebox: A tamper-evident, verifiable electronic voting
+system, in Proceedings of the 17th Conference on Security Symposium, ser. SS'08. Berkeley, CA, USA:
+USENIX Association, 2008, pp. 349{364}.
+AUTHOR BIOGRAPHIES
+Kashif Mehboob Khan is a PhD student in information security at the N.E.D. University
+Karachi, Pakistan. Kashif graduated in Computer Engineering from Sir Syed University of Engineering &
+Technology in 2005-2006 followed by Master in C.S. & I.T. from N.E.D University of Engineering &
+Technology in 2009.
+Junaid Arshad is a Senior Lecturer in cyber security emphasising impact of novel and emerging
+technological paradigms such as blockchain, distributed systems, cloud computing and big data.. He has
+worked as distributed systems security specialist for a number of EU funded projects focusing on mitigating
+specific security threats to the project partners. Dr. Junaid Arshad has been actively involved in publishing
+high quality research within this field and has a number of publications at high quality venues including
+journals, book chapter, conferences and workshops. Dr. Junaid Arshad has served on Program and Review
+Committee of a number of journals and conferences.
+Muhammad Mubashir Khan is an Associate Professor in the Department of Computer Science
+and Information Technology at NED University of Engineering and Technology, Karachi Pakistan. He
+received his PhD degree in Computing from University of Leeds, UK in 2011. He did postdoctoral research
+in Quantum Information Group University of Leeds, UK in 2015-16. His current research interests include
+Network and Information Security, Cybersecurity and Quantum Cryptography
